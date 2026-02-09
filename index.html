@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drishti Focus | Personal Study Station</title>
+    <title>Drishti IAS | Classroom</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
@@ -33,8 +33,8 @@
             <div class="flex items-center gap-4">
                 <img src="https://www.drishtiias.com/frontend/img/logo-hindi-main.png" alt="Drishti IAS" class="h-10 object-contain">
                 <div class="hidden sm:block border-l border-slate-200 pl-4">
-                    <h1 class="text-lg font-bold tracking-tight text-slate-900">Drishti Focus</h1>
-                    <p class="text-[10px] uppercase tracking-widest font-bold text-red-600">Personal Study Station</p>
+                    <h1 class="text-lg font-bold tracking-tight text-slate-900">Drishti IAS</h1>
+                    <p class="text-[10px] uppercase tracking-widest font-bold text-red-600">Classroom</p>
                 </div>
             </div>
             <div class="flex items-center gap-3">
@@ -50,18 +50,27 @@
 
         <!-- VIEW 1: DASHBOARD (Schedule List) -->
         <section id="view-dashboard" class="fade-in w-full h-full overflow-y-auto pr-2">
-            <div class="flex justify-between items-end mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
                 <div>
-                    <h2 class="text-3xl font-black text-slate-900">My Study Schedule</h2>
-                    <p class="text-slate-500 mt-1">Manage your upcoming classes and rest intervals.</p>
+                    <h2 class="text-3xl font-black text-slate-900">Study Schedule</h2>
+                    <p class="text-slate-500 mt-1">Manage your upcoming classes.</p>
                 </div>
-                <button onclick="modalManager.open()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-red-100 flex items-center gap-2 transition-all">
-                    <i class="fas fa-plus"></i> Schedule Class
-                </button>
+                
+                <div class="flex flex-wrap gap-2 items-center">
+                    <!-- Filter Controls -->
+                    <div class="bg-white border border-slate-200 p-1 rounded-xl flex items-center shadow-sm">
+                        <button onclick="scheduler.setFilter('default')" id="btn-filter-default" class="px-3 py-2 rounded-lg text-xs font-bold bg-slate-100 text-slate-700">Today & Tmrw</button>
+                        <div class="h-4 w-px bg-slate-200 mx-2"></div>
+                        <input type="date" id="date-filter-input" onchange="scheduler.setFilter('date', this.value)" class="text-xs font-bold text-slate-600 outline-none bg-transparent">
+                    </div>
+
+                    <button onclick="modalManager.open()" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-red-100 flex items-center gap-2 transition-all text-sm">
+                        <i class="fas fa-plus"></i> Add Class
+                    </button>
+                </div>
             </div>
 
             <div id="loading-skeleton" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                 <!-- Loading State -->
                  <div class="bg-white p-6 rounded-2xl border border-slate-100 h-40 animate-pulse"></div>
                  <div class="bg-white p-6 rounded-2xl border border-slate-100 h-40 animate-pulse"></div>
             </div>
@@ -72,10 +81,10 @@
             
             <div id="empty-state" class="hidden text-center py-20">
                 <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-calendar-plus text-3xl text-slate-400"></i>
+                    <i class="fas fa-calendar-day text-3xl text-slate-400"></i>
                 </div>
-                <h3 class="text-xl font-bold text-slate-700">No classes scheduled</h3>
-                <p class="text-slate-400">Add a new class to start your productive day.</p>
+                <h3 class="text-xl font-bold text-slate-700">No classes found</h3>
+                <p class="text-slate-400">Relax or adjust your date filter.</p>
             </div>
         </section>
 
@@ -100,7 +109,7 @@
                 </div>
             </div>
 
-            <!-- Content Area (Relative Wrapper for Absolute Iframe) -->
+            <!-- Content Area -->
             <div class="player-wrapper shadow-2xl">
                 <!-- Iframe Container -->
                 <div id="content-container" class="w-full h-full"></div>
@@ -110,7 +119,7 @@
                     <div class="text-center p-8 max-w-lg">
                         <i class="fas fa-mug-hot text-6xl mb-6 text-emerald-400 animate-bounce"></i>
                         <h2 class="text-5xl font-black mb-3">Rest Time</h2>
-                        <p class="text-slate-400 text-lg mb-8">Content paused. Take a deep breath and relax your eyes.</p>
+                        <p class="text-slate-400 text-lg mb-8">Content paused. Relax your eyes.</p>
                         
                         <div class="bg-slate-800/50 p-6 rounded-3xl border border-slate-700 mb-8 inline-block">
                             <span class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Resuming In</span>
@@ -132,8 +141,8 @@
             <div class="bg-white rounded-[2rem] p-8 shadow-2xl border border-slate-100 w-full max-w-4xl flex flex-col h-[80vh]">
                 <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-6 shrink-0">
                     <div>
-                        <h2 class="text-2xl font-black text-slate-900">Active Recall Session</h2>
-                        <p class="text-slate-500">Write down everything you remember from the class.</p>
+                        <h2 class="text-2xl font-black text-slate-900">Recall Session</h2>
+                        <p class="text-slate-500">Write down everything you remember.</p>
                     </div>
                     <div class="bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100">
                         <span class="text-xs font-bold text-indigo-400 uppercase block">Time Remaining</span>
@@ -210,7 +219,7 @@
                     <div id="rest-inputs-container" class="space-y-3">
                         <!-- Dynamic Rows -->
                     </div>
-                    <p class="text-[10px] text-slate-400 mt-2 font-medium">System will auto-pause content during rest (YouTube only).</p>
+                    <p class="text-[10px] text-slate-400 mt-2 font-medium">Video/Content will be paused/removed during rest.</p>
                 </div>
             </div>
 
@@ -238,30 +247,26 @@
           measurementId: "G-B8JLZ293K8"
         };
 
-        // --- GLOBAL APP LOGIC ---
         const app = initializeApp(myFirebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const collectionRef = collection(db, 'artifacts', 'patelexamportal', 'user_study_data', 'classes', 'schedule');
 
-        // --- SOURCE HANDLER (Optimized for Embeds) ---
+        // --- SOURCE HANDLER ---
         window.sourceHandler = {
             process: (type, url) => {
                 let finalUrl = url;
                 let warning = null;
 
                 if (type === 'youtube') {
-                    // Extract ID and enable JS API for pausing
                     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
                     const match = url.match(regExp);
                     if (match && match[2].length === 11) {
-                        // enablejsapi=1 is CRITICAL for pause functionality
                         finalUrl = `https://www.youtube.com/embed/${match[2]}?enablejsapi=1&autoplay=1`;
                     } else {
                         warning = "Invalid YouTube URL";
                     }
                 } else if (type === 'drive') {
-                    // Force preview mode for full screen capability
                     if (url.includes('drive.google.com')) {
                         const fileIdMatch = url.match(/\/d\/(.+?)\/(view|edit|usp)/);
                         if (fileIdMatch && fileIdMatch[1]) {
@@ -269,11 +274,9 @@
                         }
                     }
                 }
-                
                 return { url: finalUrl, warning };
             },
             render: (type, url) => {
-                // Using absolute positioning to force 100% height/width of parent
                 return `<iframe id="main-frame" src="${url}" class="source-iframe" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
             }
         };
@@ -290,7 +293,7 @@
                     <span class="text-sm font-bold text-slate-500">take</span>
                     <input type="number" class="w-20 p-2 rounded-lg border border-slate-200 text-sm font-bold inp-for focus:ring-2 focus:ring-red-500 outline-none" placeholder="Min" value="${data.duration}">
                     <span class="text-sm font-bold text-slate-500">rest</span>
-                    <button onclick="this.parentElement.remove()" class="w-8 h-8 rounded-full bg-red-50 text-red-400 hover:bg-red-500 hover:text-white ml-auto transition-all"><i class="fas fa-trash text-xs"></i></button>
+                    <button onclick="this.parentElement.remove()" class="w-8 h-8 rounded-full bg-red-50 text-red-400 hover:bg-red-50 hover:text-white ml-auto transition-all"><i class="fas fa-trash text-xs"></i></button>
                 `;
                 container.appendChild(div);
             },
@@ -306,9 +309,11 @@
             }
         };
 
-        // --- SCHEDULER (CRUD) ---
+        // --- SCHEDULER & FILTER ---
         window.scheduler = {
             classes: [],
+            filterMode: 'default', // 'default' (Today+Tom) or 'date'
+            filterDate: null,
             
             init: async () => {
                 await signInAnonymously(auth);
@@ -317,6 +322,28 @@
                     window.scheduler.classes = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                     window.viewManager.renderList();
                 });
+                // Start Global Countdown Clock
+                setInterval(window.scheduler.updateCountdowns, 1000);
+            },
+
+            setFilter: (mode, value) => {
+                window.scheduler.filterMode = mode;
+                window.scheduler.filterDate = value;
+                
+                // UI Toggle
+                const btnDefault = document.getElementById('btn-filter-default');
+                const dateInput = document.getElementById('date-filter-input');
+                
+                if(mode === 'default') {
+                    btnDefault.classList.replace('bg-white', 'bg-slate-100');
+                    btnDefault.classList.replace('text-slate-500', 'text-slate-700');
+                    dateInput.value = '';
+                } else {
+                    btnDefault.classList.replace('bg-slate-100', 'bg-white');
+                    btnDefault.classList.replace('text-slate-700', 'text-slate-500');
+                }
+                
+                window.viewManager.renderList();
             },
 
             saveClass: async () => {
@@ -336,10 +363,7 @@
                 if (warning) { alert(warning); return; }
 
                 const data = {
-                    title,
-                    type,
-                    url,
-                    originalUrl: urlRaw,
+                    title, type, url, originalUrl: urlRaw,
                     startTime: new Date(timeStr).getTime(),
                     durationMinutes: durationHrs * 60,
                     restPlan: window.restManager.getPlan(),
@@ -347,21 +371,37 @@
                 };
 
                 try {
-                    if (id) {
-                        await updateDoc(doc(collectionRef, id), data);
-                    } else {
-                        await addDoc(collectionRef, data);
-                    }
+                    if (id) await updateDoc(doc(collectionRef, id), data);
+                    else await addDoc(collectionRef, data);
                     window.modalManager.close();
-                } catch (e) {
-                    alert("Error: " + e.message);
-                }
+                } catch (e) { alert("Error: " + e.message); }
             },
 
             deleteClass: async (id) => {
-                if(confirm("Delete this class?")) {
-                    await deleteDoc(doc(collectionRef, id));
-                }
+                if(confirm("Delete this class?")) await deleteDoc(doc(collectionRef, id));
+            },
+
+            updateCountdowns: () => {
+                const now = Date.now();
+                const elements = document.querySelectorAll('.countdown-btn');
+                elements.forEach(el => {
+                    const startTime = parseInt(el.dataset.start);
+                    if (startTime > now) {
+                        const diff = startTime - now;
+                        const h = Math.floor(diff / 3600000);
+                        const m = Math.floor((diff % 3600000) / 60000);
+                        const s = Math.floor((diff % 60000) / 1000);
+                        el.textContent = `Starts in ${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                        el.disabled = true;
+                        el.classList.add('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
+                        el.classList.remove('bg-indigo-600', 'text-white', 'hover:bg-indigo-700');
+                    } else {
+                        el.textContent = "Start Class Now";
+                        el.disabled = false;
+                        el.classList.remove('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
+                        el.classList.add('bg-indigo-600', 'text-white', 'hover:bg-indigo-700');
+                    }
+                });
             }
         };
 
@@ -379,15 +419,12 @@
                 window.player.activeClass = cls;
                 window.viewManager.switch('player');
                 
-                // Setup UI
                 document.getElementById('player-title').textContent = cls.title;
                 document.getElementById('player-source-type').textContent = cls.type;
                 
-                // Inject Iframe
                 const container = document.getElementById('content-container');
                 container.innerHTML = window.sourceHandler.render(cls.type, cls.url);
 
-                // Start Timer
                 window.player.elapsedSeconds = 0;
                 window.player.isInRest = false;
                 clearInterval(window.player.timerInterval);
@@ -413,7 +450,6 @@
                 }
 
                 if (window.player.activeClass.restPlan) {
-                    // Check if exact minute matches rest start (checks once per sec)
                     const breakNeeded = window.player.activeClass.restPlan.find(p => p.after === elapsedMin && window.player.elapsedSeconds % 60 === 0);
                     if (breakNeeded) {
                         window.player.triggerRest(breakNeeded.duration);
@@ -426,10 +462,15 @@
                 const overlay = document.getElementById('rest-overlay');
                 overlay.classList.remove('hidden');
                 
-                // Try to pause YouTube via API
+                const type = window.player.activeClass.type;
                 const iframe = document.getElementById('main-frame');
-                if (iframe && window.player.activeClass.type === 'youtube') {
+
+                // Logic to Stop Content
+                if (type === 'youtube' && iframe) {
                     iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+                } else {
+                    // For Drive/Web: Remove Source to force stop
+                    document.getElementById('content-container').innerHTML = '';
                 }
                 
                 let secondsLeft = durationMin * 60;
@@ -454,18 +495,22 @@
                 window.player.isInRest = false;
                 document.getElementById('rest-overlay').classList.add('hidden');
                 
-                // Resume YouTube
-                const iframe = document.getElementById('main-frame');
-                if (iframe && window.player.activeClass.type === 'youtube') {
-                    iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+                const type = window.player.activeClass.type;
+                
+                // Logic to Resume Content
+                if (type === 'youtube') {
+                    const iframe = document.getElementById('main-frame');
+                    if(iframe) iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+                } else {
+                    // For Drive/Web: Reload Source (Will restart from beginning)
+                    const container = document.getElementById('content-container');
+                    container.innerHTML = window.sourceHandler.render(window.player.activeClass.type, window.player.activeClass.url);
                 }
             },
 
             endClassEarly: () => {
                 clearInterval(window.player.timerInterval);
-                // CRITICAL: Destroy Iframe to stop audio/video
                 document.getElementById('content-container').innerHTML = '';
-                
                 window.viewManager.switch('recall');
                 window.player.startRecallSession();
             },
@@ -486,7 +531,6 @@
                         alert("Recall session finished.");
                     }
                 }, 1000);
-                
                 window.player.currentRecallInt = recallInt;
             },
 
@@ -500,11 +544,12 @@
         window.viewManager = {
             showDashboard: () => {
                 clearInterval(window.player.timerInterval);
-                // Ensure audio stops if user clicked dashboard while playing
                 document.getElementById('content-container').innerHTML = ''; 
                 document.getElementById('view-dashboard').classList.remove('hidden');
                 document.getElementById('view-player').classList.add('hidden');
                 document.getElementById('view-recall').classList.add('hidden');
+                // Trigger countdown update immediately
+                window.scheduler.updateCountdowns();
             },
             switch: (view) => {
                 document.querySelectorAll('section').forEach(el => el.classList.add('hidden'));
@@ -518,18 +563,40 @@
                 loading.classList.add('hidden');
                 container.innerHTML = '';
                 
-                if (window.scheduler.classes.length === 0) {
+                // FILTER LOGIC
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                const tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const dayAfter = new Date(today);
+                dayAfter.setDate(dayAfter.getDate() + 2);
+
+                const filteredClasses = window.scheduler.classes.filter(cls => {
+                    const clsDate = new Date(cls.startTime);
+                    clsDate.setHours(0,0,0,0);
+                    
+                    if (window.scheduler.filterMode === 'default') {
+                        // Show if date is Today or Tomorrow
+                        return clsDate.getTime() === today.getTime() || clsDate.getTime() === tomorrow.getTime();
+                    } else if (window.scheduler.filterMode === 'date' && window.scheduler.filterDate) {
+                        // Specific Date
+                        const selected = new Date(window.scheduler.filterDate);
+                        selected.setHours(0,0,0,0);
+                        return clsDate.getTime() === selected.getTime();
+                    }
+                    return true;
+                });
+
+                if (filteredClasses.length === 0) {
                     empty.classList.remove('hidden');
                     return;
                 }
                 
                 empty.classList.add('hidden');
-                const now = new Date().getTime();
 
-                window.scheduler.classes.forEach(cls => {
+                filteredClasses.forEach(cls => {
                     const dateObj = new Date(cls.startTime);
-                    const canStart = Math.abs(now - cls.startTime) < (60 * 60 * 1000) || now > cls.startTime; 
-
+                    
                     const card = document.createElement('div');
                     card.className = 'bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all relative group';
                     card.innerHTML = `
@@ -546,12 +613,15 @@
                             <p class="flex items-center gap-2"><i class="fas fa-hourglass-half text-slate-400"></i> ${cls.durationMinutes / 60} Hours</p>
                             <p class="flex items-center gap-2"><i class="fas fa-bed text-slate-400"></i> ${cls.restPlan ? cls.restPlan.length : 0} Breaks</p>
                         </div>
-                        <button onclick="window.player.start('${cls.id}')" class="w-full py-3 rounded-xl font-bold transition-all ${canStart ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}">
-                            ${canStart ? 'Start Class Now' : 'Scheduled'}
+                        <button onclick="window.player.start('${cls.id}')" data-start="${cls.startTime}" class="countdown-btn w-full py-3 rounded-xl font-bold transition-all bg-slate-100 text-slate-400 cursor-not-allowed">
+                            Loading...
                         </button>
                     `;
                     container.appendChild(card);
                 });
+                
+                // Initial update
+                window.scheduler.updateCountdowns();
             }
         };
 
