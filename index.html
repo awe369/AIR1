@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drishti Focus | Personal Study Station</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 1); }
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        .source-iframe { width: 100%; height: 100%; border: none; }
+        .rest-overlay { background: rgba(15, 23, 42, 0.95); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-slate-900">
+
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-slate-200 px-6 py-3 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <img src="https://www.drishtiias.com/frontend/img/logo-hindi-main.png" alt="Drishti IAS" class="h-10 object-contain">
+                <div class="hidden sm:block border-l border-slate-200 pl-4">
+                    <h1 class="text-lg font-bold tracking-tight text-slate-900">Drishti Focus</h1>
+                    <p class="text-[10px] uppercase tracking-widest font-bold text-red-600">Personal Study Station</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="clock-display" class="font-mono text-sm font-bold text-slate-500 hidden md:block">--:--</span>
+                <button onclick="viewManager.showDashboard()" class="text-xs font-bold text-slate-600 hover:text-red-600 transition-colors border border-slate-200 px-4 py-2 rounded-xl bg-white shadow-sm">
+                    Dashboard
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow flex flex-col p-6 w-full max-w-7xl mx-auto">
+
+        <!-- VIEW 1: DASHBOARD (Schedule List) -->
+        <section id="view-dashboard" class="fade-in w-full">
+            <div class="flex justify-between items-end mb-8">
+                <div>
+                    <h2 class="text-3xl font-black text-slate-900">My Study Schedule</h2>
+                    <p class="text-slate-500 mt-1">Manage your upcoming classes and rest intervals.</p>
+                </div>
+                <button onclick="modalManager.open()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-red-100 flex items-center gap-2 transition-all">
+                    <i class="fas fa-plus"></i> Schedule Class
+                </button>
+            </div>
+
+            <div id="loading-skeleton" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Skeletons injected via JS -->
+            </div>
+
+            <div id="schedule-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Classes injected via JS -->
+            </div>
+            
+            <div id="empty-state" class="hidden text-center py-20">
+                <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-calendar-plus text-3xl text-slate-400"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-700">No classes scheduled</h3>
+                <p class="text-slate-400">Add a new class to start your productive day.</p>
+            </div>
+        </section>
+
+        <!-- VIEW 2: ACTIVE CLASS PLAYER -->
+        <section id="view-player" class="hidden w-full h-full flex-grow flex flex-col fade-in">
+            <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 mb-4 shadow-sm">
+                <div>
+                    <h3 id="player-title" class="font-bold text-slate-900 text-lg">Class Title</h3>
+                    <div class="flex gap-3 text-xs font-bold text-slate-500 uppercase tracking-wider mt-1">
+                        <span id="player-status" class="text-emerald-600">● Live Session</span>
+                        <span id="player-source-type">Source</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-right">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Session Time</p>
+                        <p id="session-timer" class="font-mono text-xl font-bold text-slate-800">00:00:00</p>
+                    </div>
+                    <button onclick="player.endClassEarly()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors">
+                        End Class
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="relative flex-grow bg-slate-900 rounded-2xl overflow-hidden shadow-2xl">
+                <div id="content-container" class="w-full h-full">
+                    <!-- Iframe injected here -->
+                </div>
+
+                <!-- Rest Overlay -->
+                <div id="rest-overlay" class="hidden absolute inset-0 rest-overlay flex flex-col items-center justify-center text-white z-50 text-center p-8">
+                    <i class="fas fa-mug-hot text-5xl mb-6 text-emerald-400 animate-bounce"></i>
+                    <h2 class="text-4xl font-black mb-2">Rest Time</h2>
+                    <p class="text-slate-300 text-lg mb-8">Take a deep breath. Relax your eyes.</p>
+                    <div class="font-mono text-6xl font-bold text-emerald-400 mb-8" id="rest-timer">00:00</div>
+                    <button onclick="player.skipRest()" class="border border-slate-600 text-slate-400 px-6 py-2 rounded-full hover:bg-white hover:text-slate-900 transition-all text-sm font-bold">Skip Rest</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: RECALL SESSION -->
+        <section id="view-recall" class="hidden max-w-3xl mx-auto w-full fade-in py-10">
+            <div class="bg-white rounded-[2rem] p-8 shadow-2xl border border-slate-100">
+                <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-6">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-900">Active Recall Session</h2>
+                        <p class="text-slate-500">Write down everything you remember from the class.</p>
+                    </div>
+                    <div class="bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100">
+                        <span class="text-xs font-bold text-indigo-400 uppercase block">Time Remaining</span>
+                        <span id="recall-timer" class="text-2xl font-mono font-bold text-indigo-600">10:00</span>
+                    </div>
+                </div>
+                
+                <textarea id="recall-notes" class="w-full h-96 p-6 bg-slate-50 rounded-2xl border-2 border-slate-200 focus:border-indigo-500 focus:ring-0 outline-none resize-none font-medium text-slate-700 leading-relaxed" placeholder="Start typing your key takeaways here..."></textarea>
+                
+                <div class="mt-6 flex justify-end">
+                    <button onclick="player.finishRecall()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all">
+                        Save & Complete
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- CLASS MODAL -->
+    <div id="class-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white z-10">
+                <h3 class="text-xl font-bold text-slate-900" id="modal-title">Schedule New Class</h3>
+                <button onclick="modalManager.close()" class="text-slate-400 hover:text-red-600"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            
+            <div class="p-8 space-y-6">
+                <!-- Hidden ID for Editing -->
+                <input type="hidden" id="edit-class-id">
+
+                <!-- Title -->
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Class Title</label>
+                    <input type="text" id="inp-title" placeholder="e.g. Modern History - Lecture 4" class="w-full bg-slate-50 p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-red-500 outline-none font-medium">
+                </div>
+
+                <!-- Source -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-1">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Source Type</label>
+                        <select id="inp-type" class="w-full bg-slate-50 p-3 rounded-xl border border-slate-200 focus:outline-none font-medium">
+                            <option value="youtube">YouTube Video</option>
+                            <option value="drive">Google Drive</option>
+                            <option value="web">Website Link</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Link / URL</label>
+                        <input type="text" id="inp-url" placeholder="Paste link here..." class="w-full bg-slate-50 p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-red-500 outline-none font-medium">
+                    </div>
+                </div>
+
+                <!-- Timing -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Date & Time</label>
+                        <input type="datetime-local" id="inp-time" class="w-full bg-slate-50 p-3 rounded-xl border border-slate-200 outline-none font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Duration (Hours)</label>
+                        <input type="number" id="inp-duration" value="2" min="0.5" step="0.5" class="w-full bg-slate-50 p-3 rounded-xl border border-slate-200 outline-none font-bold">
+                    </div>
+                </div>
+
+                <!-- Rest Plans -->
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <label class="block text-sm font-bold text-slate-700">Rest Intervals</label>
+                        <button onclick="restManager.addInputRow()" class="text-xs bg-white border border-slate-200 px-3 py-1 rounded-lg font-bold hover:text-red-600">+ Add Break</button>
+                    </div>
+                    <div id="rest-inputs-container" class="space-y-3">
+                        <!-- Dynamic Rows -->
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-2">Example: After 45 mins, take 10 mins rest.</p>
+                </div>
+            </div>
+
+            <div class="p-6 border-t border-slate-100 bg-slate-50 rounded-b-3xl flex justify-end gap-3">
+                <button onclick="modalManager.close()" class="px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-100">Cancel</button>
+                <button onclick="scheduler.saveClass()" class="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-800 shadow-lg">Save Schedule</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- FIREBASE CONFIG (Existing) ---
+        const myFirebaseConfig = {
+          apiKey: "AIzaSyDdjErMiMUMYG4DfS75m9it_NgJkQLvyUg",
+          authDomain: "patelexamportal.firebaseapp.com",
+          projectId: "patelexamportal",
+          storageBucket: "patelexamportal.firebasestorage.app",
+          messagingSenderId: "532670965491",
+          appId: "1:532670965491:web:694a2ae477b7c0b90b3986",
+          measurementId: "G-B8JLZ293K8"
+        };
+
+        // --- GLOBAL APP LOGIC ---
+        const app = initializeApp(myFirebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const collectionRef = collection(db, 'artifacts', 'patelexamportal', 'user_study_data', 'classes', 'schedule');
+
+        // --- SOURCE HANDLER (Advanced) ---
+        window.sourceHandler = {
+            process: (type, url) => {
+                let finalUrl = url;
+                let warning = null;
+
+                if (type === 'youtube') {
+                    // Regex to extract ID from various YouTube URL formats
+                    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+                    const match = url.match(regExp);
+                    if (match && match[2].length === 11) {
+                        finalUrl = `https://www.youtube.com/embed/${match[2]}?autoplay=1`;
+                    } else {
+                        warning = "Invalid YouTube URL";
+                    }
+                } else if (type === 'drive') {
+                    // Convert view/edit to preview
+                    if (url.includes('drive.google.com')) {
+                        const fileIdMatch = url.match(/\/d\/(.+?)\/(view|edit|usp)/);
+                        if (fileIdMatch && fileIdMatch[1]) {
+                            finalUrl = `https://drive.google.com/file/d/${fileIdMatch[1]}/preview`;
+                        }
+                    }
+                }
+                // Web links stay as they are, but might be blocked by X-Frame-Options
+                
+                return { url: finalUrl, warning };
+            },
+            render: (type, url) => {
+                return `<iframe src="${url}" class="source-iframe" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+            }
+        };
+
+        // --- REST MANAGER ---
+        window.restManager = {
+            addInputRow: (data = { after: '', duration: '' }) => {
+                const container = document.getElementById('rest-inputs-container');
+                const div = document.createElement('div');
+                div.className = 'flex gap-2 items-center rest-row';
+                div.innerHTML = `
+                    <span class="text-sm font-bold text-slate-500">After</span>
+                    <input type="number" class="w-20 p-2 rounded-lg border border-slate-200 text-sm font-bold inp-after" placeholder="Min" value="${data.after}">
+                    <span class="text-sm font-bold text-slate-500">take</span>
+                    <input type="number" class="w-20 p-2 rounded-lg border border-slate-200 text-sm font-bold inp-for" placeholder="Min" value="${data.duration}">
+                    <span class="text-sm font-bold text-slate-500">rest</span>
+                    <button onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-600 ml-auto"><i class="fas fa-trash"></i></button>
+                `;
+                container.appendChild(div);
+            },
+            getPlan: () => {
+                const rows = document.querySelectorAll('.rest-row');
+                const plan = [];
+                rows.forEach(row => {
+                    const after = parseInt(row.querySelector('.inp-after').value);
+                    const duration = parseInt(row.querySelector('.inp-for').value);
+                    if (after && duration) plan.push({ after, duration });
+                });
+                return plan.sort((a, b) => a.after - b.after);
+            }
+        };
+
+        // --- SCHEDULER (CRUD) ---
+        window.scheduler = {
+            classes: [],
+            
+            init: async () => {
+                await signInAnonymously(auth);
+                // Listen to Firestore
+                const q = query(collectionRef, orderBy('startTime'));
+                onSnapshot(q, (snapshot) => {
+                    window.scheduler.classes = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                    window.viewManager.renderList();
+                });
+            },
+
+            saveClass: async () => {
+                const id = document.getElementById('edit-class-id').value;
+                const title = document.getElementById('inp-title').value;
+                const type = document.getElementById('inp-type').value;
+                const urlRaw = document.getElementById('inp-url').value;
+                const timeStr = document.getElementById('inp-time').value;
+                const durationHrs = parseFloat(document.getElementById('inp-duration').value);
+                
+                if (!title || !urlRaw || !timeStr || !durationHrs) {
+                    alert("Please fill all required fields.");
+                    return;
+                }
+
+                const { url, warning } = window.sourceHandler.process(type, urlRaw);
+                if (warning) { alert(warning); return; }
+
+                const data = {
+                    title,
+                    type,
+                    url,
+                    originalUrl: urlRaw,
+                    startTime: new Date(timeStr).getTime(),
+                    durationMinutes: durationHrs * 60,
+                    restPlan: window.restManager.getPlan(),
+                    status: 'scheduled' // scheduled, completed
+                };
+
+                try {
+                    if (id) {
+                        await updateDoc(doc(collectionRef, id), data);
+                    } else {
+                        await addDoc(collectionRef, data);
+                    }
+                    window.modalManager.close();
+                } catch (e) {
+                    console.error(e);
+                    alert("Error saving schedule: " + e.message);
+                }
+            },
+
+            deleteClass: async (id) => {
+                if(confirm("Delete this class?")) {
+                    await deleteDoc(doc(collectionRef, id));
+                }
+            }
+        };
+
+        // --- PLAYER LOGIC ---
+        window.player = {
+            activeClass: null,
+            timerInterval: null,
+            elapsedSeconds: 0,
+            isInRest: false,
+
+            start: (classId) => {
+                const cls = window.scheduler.classes.find(c => c.id === classId);
+                if (!cls) return;
+
+                window.player.activeClass = cls;
+                window.viewManager.switch('player');
+                
+                // Setup UI
+                document.getElementById('player-title').textContent = cls.title;
+                document.getElementById('player-source-type').textContent = cls.type;
+                document.getElementById('content-container').innerHTML = window.sourceHandler.render(cls.type, cls.url);
+
+                // Start Timer Loop
+                window.player.elapsedSeconds = 0;
+                window.player.isInRest = false;
+                clearInterval(window.player.timerInterval);
+                
+                window.player.timerInterval = setInterval(() => {
+                    window.player.tick();
+                }, 1000);
+            },
+
+            tick: () => {
+                if (window.player.isInRest) {
+                    // Handled by rest logic
+                    return;
+                }
+
+                window.player.elapsedSeconds++;
+                const elapsedMin = Math.floor(window.player.elapsedSeconds / 60);
+
+                // Update Display
+                const h = Math.floor(window.player.elapsedSeconds / 3600);
+                const m = Math.floor((window.player.elapsedSeconds % 3600) / 60);
+                const s = window.player.elapsedSeconds % 60;
+                document.getElementById('session-timer').textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+
+                // Check Class End
+                if (elapsedMin >= window.player.activeClass.durationMinutes) {
+                    window.player.endClassEarly(); // Actually finishes normally
+                }
+
+                // Check Rest Triggers
+                if (window.player.activeClass.restPlan) {
+                    const breakNeeded = window.player.activeClass.restPlan.find(p => p.after === elapsedMin && window.player.elapsedSeconds % 60 === 0);
+                    if (breakNeeded) {
+                        window.player.triggerRest(breakNeeded.duration);
+                    }
+                }
+            },
+
+            triggerRest: (durationMin) => {
+                window.player.isInRest = true;
+                const overlay = document.getElementById('rest-overlay');
+                overlay.classList.remove('hidden');
+                
+                let secondsLeft = durationMin * 60;
+                const display = document.getElementById('rest-timer');
+                
+                // Pause YouTube if possible (handled by removing/hiding iframe or masking)
+                // For simplicity, we just overlay.
+
+                const restInterval = setInterval(() => {
+                    secondsLeft--;
+                    const m = Math.floor(secondsLeft / 60);
+                    const s = secondsLeft % 60;
+                    display.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+
+                    if (secondsLeft <= 0 || !window.player.isInRest) {
+                        clearInterval(restInterval);
+                        window.player.skipRest();
+                    }
+                }, 1000);
+            },
+
+            skipRest: () => {
+                window.player.isInRest = false;
+                document.getElementById('rest-overlay').classList.add('hidden');
+            },
+
+            endClassEarly: () => {
+                clearInterval(window.player.timerInterval);
+                window.viewManager.switch('recall');
+                window.player.startRecallSession();
+            },
+
+            // RECALL LOGIC
+            startRecallSession: () => {
+                let seconds = 600; // 10 mins
+                const display = document.getElementById('recall-timer');
+                const noteArea = document.getElementById('recall-notes');
+                noteArea.value = '';
+                
+                const recallInt = setInterval(() => {
+                    seconds--;
+                    const m = Math.floor(seconds / 60);
+                    const s = seconds % 60;
+                    display.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+
+                    if (seconds <= 0) {
+                        clearInterval(recallInt);
+                        alert("Recall session time is up!");
+                    }
+                }, 1000);
+                
+                window.player.currentRecallInt = recallInt;
+            },
+
+            finishRecall: async () => {
+                clearInterval(window.player.currentRecallInt);
+                // Ideally save notes to Firebase, for now just closing
+                const notes = document.getElementById('recall-notes').value;
+                if(notes.trim().length > 0) {
+                     // Could save notes here
+                }
+                
+                // Mark class complete in UI logic or DB
+                window.viewManager.showDashboard();
+            }
+        };
+
+        // --- UI & MODAL MANAGERS ---
+        window.viewManager = {
+            showDashboard: () => {
+                clearInterval(window.player.timerInterval);
+                document.getElementById('view-dashboard').classList.remove('hidden');
+                document.getElementById('view-player').classList.add('hidden');
+                document.getElementById('view-recall').classList.add('hidden');
+            },
+            switch: (view) => {
+                document.querySelectorAll('section').forEach(el => el.classList.add('hidden'));
+                document.getElementById(`view-${view}`).classList.remove('hidden');
+            },
+            renderList: () => {
+                const container = document.getElementById('schedule-list');
+                const empty = document.getElementById('empty-state');
+                const loading = document.getElementById('loading-skeleton');
+                
+                loading.classList.add('hidden');
+                container.innerHTML = '';
+                
+                if (window.scheduler.classes.length === 0) {
+                    empty.classList.remove('hidden');
+                    return;
+                }
+                
+                empty.classList.add('hidden');
+                const now = new Date().getTime();
+
+                window.scheduler.classes.forEach(cls => {
+                    const dateObj = new Date(cls.startTime);
+                    const isFuture = cls.startTime > now;
+                    const canStart = Math.abs(now - cls.startTime) < (30 * 60 * 1000) || now > cls.startTime; // Can start 30 mins before or anytime after
+
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative group';
+                    card.innerHTML = `
+                        <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                            <button onclick="window.modalManager.edit('${cls.id}')" class="text-slate-400 hover:text-indigo-600"><i class="fas fa-edit"></i></button>
+                            <button onclick="window.scheduler.deleteClass('${cls.id}')" class="text-slate-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                        </div>
+                        <div class="flex items-start justify-between mb-4">
+                            <span class="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wide">${cls.type}</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2 leading-tight">${cls.title}</h3>
+                        <div class="text-sm text-slate-500 mb-6 space-y-1">
+                            <p><i class="far fa-clock w-5"></i> ${dateObj.toLocaleDateString()} at ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                            <p><i class="fas fa-hourglass-half w-5"></i> ${cls.durationMinutes / 60} Hours</p>
+                            <p><i class="fas fa-bed w-5"></i> ${cls.restPlan ? cls.restPlan.length : 0} Rest Intervals</p>
+                        </div>
+                        <button onclick="window.player.start('${cls.id}')" class="w-full py-3 rounded-xl font-bold transition-all ${canStart ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100 shadow-lg' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}">
+                            ${canStart ? 'Start Class' : 'Scheduled'}
+                        </button>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+        };
+
+        window.modalManager = {
+            open: () => {
+                document.getElementById('class-modal').classList.remove('hidden');
+                document.getElementById('modal-title').textContent = "Schedule New Class";
+                // Reset inputs
+                document.getElementById('edit-class-id').value = "";
+                document.getElementById('inp-title').value = "";
+                document.getElementById('inp-url').value = "";
+                document.getElementById('inp-duration').value = "2";
+                document.getElementById('rest-inputs-container').innerHTML = "";
+            },
+            close: () => {
+                document.getElementById('class-modal').classList.add('hidden');
+            },
+            edit: (id) => {
+                const cls = window.scheduler.classes.find(c => c.id === id);
+                if(!cls) return;
+                
+                window.modalManager.open();
+                document.getElementById('modal-title').textContent = "Edit Class";
+                document.getElementById('edit-class-id').value = cls.id;
+                document.getElementById('inp-title').value = cls.title;
+                document.getElementById('inp-type').value = cls.type;
+                document.getElementById('inp-url').value = cls.originalUrl || cls.url;
+                
+                // Format time for datetime-local
+                const d = new Date(cls.startTime);
+                d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+                document.getElementById('inp-time').value = d.toISOString().slice(0,16);
+                
+                document.getElementById('inp-duration').value = cls.durationMinutes / 60;
+                
+                // Rest plans
+                if(cls.restPlan) {
+                    cls.restPlan.forEach(p => window.restManager.addInputRow({ after: p.after, duration: p.duration }));
+                }
+            }
+        };
+
+        // --- CLOCK UTILS ---
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('clock-display').textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }, 1000);
+
+        // --- INIT ---
+        window.scheduler.init();
+
+    </script>
+</body>
+</html>
